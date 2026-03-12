@@ -1,5 +1,5 @@
 {
-  "name": "Assistonnes Piano",
+  "name": "tules",
   "short_name": "Piano",
   "start_url": "/tules/index.html",
   "scope": "/tules/",
@@ -9,12 +9,12 @@
   "orientation": "landscape",
   "icons": [
     {
-      "src": "/assis2/icon-192.png",
+      "src": "/tules/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/assis2/icon-512.png",
+      "src": "/tules/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

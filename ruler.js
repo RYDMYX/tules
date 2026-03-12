@@ -231,6 +231,10 @@ function getNearestKeyFromX(x) {
   const cMid = window.piano.getCMidpoint();
   const SEMITONE_UNIT = getSemitoneUnit();
   const c4Index = keyOrder.indexOf("C4");
+  
+  // compensation to neutralize C4-based calculation
+const rootIndexInKeys = keyOrder.findIndex(n => n === rulerRoot + "4");
+const tonicCompensation = (rootIndexInKeys - c4Index) * SEMITONE_UNIT;
 
   measureTape.innerHTML = "";
 
@@ -244,7 +248,7 @@ function getNearestKeyFromX(x) {
 
     if (!noteInScale(note, rulerRoot, rulerScale)) return;
 
-    const x = cMid + (i - c4Index) * SEMITONE_UNIT;
+    const x = cMid + (i - c4Index) * SEMITONE_UNIT - tonicCompensation;
 
 
    // ---- LABEL LOGIC ----

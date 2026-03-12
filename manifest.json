@@ -1,6 +1,6 @@
 {
   "name": "tules",
-  "short_name": "Piano",
+  "short_name": "tules",
   "start_url": "/tules/index.html",
   "scope": "/tules/",
   "display": "standalone",

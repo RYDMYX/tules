@@ -1,13 +1,19 @@
-/* audio.js
-   Self-contained piano sound engine
-   Provides: audioEngine.play(note, velocity)
-             audioEngine.stop(note)
-*/
+/* audio.js — engine bridge, mixer, note table */
 
 (function(){
 
 let audioCtx;
-const activeNotes = new Map();
+
+const sources = {};
+let currentSource = null;
+
+const noteSourceMap = new Map();
+
+let masterGain;
+let limiter;
+
+
+/* ---------- Note Frequencies ---------- */
 
 const keyOrder = [
 "A0","A#0","B0","C1","C#1","D1","D#1","E1","F1","F#1","G1","G#1",
@@ -25,100 +31,128 @@ const A4 = 440;
 
 keyOrder.forEach((note,i)=>{
   const n = i - 48;
-  noteFrequencies[note] = +(A4*Math.pow(2,n/12)).toFixed(2);
+  noteFrequencies[note] = +(A4 * Math.pow(2,n/12)).toFixed(4);
 });
 
+
+/* ---------- Audio Context ---------- */
+
 function ensureAudio(){
-  if(!audioCtx)
+
+  if(!audioCtx){
+
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-  if(audioCtx.state === "suspended")
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 3;
+
+    limiter = audioCtx.createDynamicsCompressor();
+    limiter.threshold.value = -3;
+    limiter.knee.value = 0;
+    limiter.ratio.value = 20;
+    limiter.attack.value = 0.003;
+    limiter.release.value = 0.25;
+
+    masterGain.connect(limiter).connect(audioCtx.destination);
+  }
+
+  if(audioCtx.state === "suspended"){
     audioCtx.resume();
+  }
 }
+
+
+function getContext(){
+  ensureAudio();
+  return audioCtx;
+}
+
+function getOutput(){
+  ensureAudio();
+  return masterGain;
+}
+
+
+/* ---------- Source Registration ---------- */
+
+function registerSource(name, source){
+
+  sources[name] = source;
+
+  if(source.init){
+    source.init(getContext(), getOutput());
+  }
+}
+
+
+/* ---------- Select Source ---------- */
+
+function setSource(name){
+
+  const src = sources[name];
+
+  if(!src){
+    console.error("Audio source not found:", name);
+    return;
+  }
+
+  currentSource = src;
+}
+
+
+/* ---------- Play ---------- */
 
 function play(note, velocity = 0.8){
 
   ensureAudio();
 
-  const freq = noteFrequencies[note];
-  if(!freq) return;
+  if(!currentSource) return;
 
-  const now = audioCtx.currentTime;
+  if(noteSourceMap.has(note)){
+    stop(note);
+  }
 
-  const masterGain = audioCtx.createGain();
-  const panNode = audioCtx.createStereoPanner();
+  currentSource.play(note, velocity);
 
-  panNode.pan.value = (Math.random() - 0.5) * 0.2;
+  noteSourceMap.set(note, currentSource);
 
-  const attack = 0.01;
-  const decay = 0.12;
-  const release = 0.35 + (0.15 * (1 - velocity));
-
-  masterGain.gain.setValueAtTime(0, now);
-  masterGain.gain.linearRampToValueAtTime(velocity * 0.5, now + attack);
-  masterGain.gain.linearRampToValueAtTime(velocity * 0.35, now + decay);
-  masterGain.gain.linearRampToValueAtTime(0, now + decay + release);
-
-  masterGain.connect(panNode).connect(audioCtx.destination);
-
-  const osc1 = audioCtx.createOscillator();
-  osc1.type = "triangle";
-  osc1.frequency.setValueAtTime(freq, now);
-  osc1.detune.value = (Math.random() - 0.5) * 4;
-  osc1.connect(masterGain);
-  osc1.start(now);
-
-  const osc2 = audioCtx.createOscillator();
-  osc2.type = "sine";
-  osc2.frequency.setValueAtTime(freq, now);
-  osc2.detune.value = (Math.random() - 0.5) * 4;
-
-  const gain2 = audioCtx.createGain();
-  gain2.gain.value = velocity * 0.4;
-
-  osc2.connect(gain2).connect(masterGain);
-  osc2.start(now);
-
-  const noteObj = { osc1, osc2, gainNode: masterGain, panNode };
-
-  noteObj.stop = function(){
-    const t = audioCtx.currentTime;
-
-    this.gainNode.gain.cancelScheduledValues(t);
-    this.gainNode.gain.linearRampToValueAtTime(0, t + 0.3);
-
-    setTimeout(()=>{
-      try{
-        this.gainNode.disconnect();
-        this.panNode.disconnect();
-      }catch(e){}
-    },400);
-
-    try{
-      this.osc1.stop(t + 0.3);
-      this.osc2.stop(t + 0.3);
-    }catch(e){}
-  };
-
-  activeNotes.set(note, noteObj);
-
-  if(window.staffNoteOn) window.staffNoteOn(note);
+  if(window.staffNoteOn){
+    window.staffNoteOn(note);
+  }
 }
+
+
+/* ---------- Stop ---------- */
 
 function stop(note){
 
-  const noteObj = activeNotes.get(note);
-  if(!noteObj) return;
+  const src = noteSourceMap.get(note);
 
-  noteObj.stop();
-  activeNotes.delete(note);
+  if(!src) return;
 
-  if(window.staffNoteOff) window.staffNoteOff(note);
+  src.stop(note);
+
+  noteSourceMap.delete(note);
+
+  if(window.staffNoteOff){
+    window.staffNoteOff(note);
+  }
 }
 
+
+/* ---------- Public API ---------- */
+
 window.audioEngine = {
+
   play,
-  stop
+  stop,
+  setSource,
+  registerSource,
+  getContext,
+  getOutput,
+
+  noteFrequencies
+
 };
 
 })();

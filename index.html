@@ -14,6 +14,18 @@
     font-size: clamp(5px, 1vmax, 18px);
   }
 
+#splash{
+  position:fixed;
+  inset:0;
+  background:black;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:3rem;
+  z-index:9999;
+}
+
   .fs-btn {
     position: fixed;
     top: 8px;
@@ -82,11 +94,21 @@
 </style>
 </head>
 <body>
+<div id="splash">Loading...</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("splash").remove();
+});
+</script>
 
   <!-- Fullscreen controls -->
   <button id="fullscreenBtn" class="fs-btn" hidden>
     ⛶
   </button>
+  
+  
+  
 
   <button id="exitFullscreenBtn" class="fs-btn" hidden>
     ✕

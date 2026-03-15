@@ -23,7 +23,7 @@
   align-items:center;
   justify-content:center;
   font-size:3rem;
-  z-index:9999;
+  z-index:2147483647;
 }
 
   .fs-btn {
@@ -96,11 +96,6 @@
 <body>
 <div id="splash">Loading...</div>
 
-<script>
-window.addEventListener("load", () => {
-  document.getElementById("splash").remove();
-});
-</script>
 
   <!-- Fullscreen controls -->
   <button id="fullscreenBtn" class="fs-btn" hidden>
@@ -138,6 +133,13 @@ audioEngine.setSource("samples");
 <!-- <script src="buttons.js"></script> -->
  <script src="screen.js"></script>
  <script src="sruler.js"></script>
+
+<script>
+window.addEventListener("load", () => {
+  document.getElementById("splash").remove();
+});
+</script>
+
   
 
   <!-- Fullscreen + orientation logic -->

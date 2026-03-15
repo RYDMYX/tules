@@ -96,13 +96,21 @@
 <body>
 <div id="splash">Loading...</div>
 
+<script>
+
+initPiano();
+initStaff();
+initRuler();
+
+document.getElementById("splash").remove();
+});
+</script>
+
 
   <!-- Fullscreen controls -->
   <button id="fullscreenBtn" class="fs-btn" hidden>
     ⛶
   </button>
-  
-  
   
 
   <button id="exitFullscreenBtn" class="fs-btn" hidden>
@@ -134,13 +142,6 @@ audioEngine.setSource("samples");
  <script src="screen.js"></script>
  <script src="sruler.js"></script>
 
-<script>
-
-document.getElementById("splash").remove();
-});
-</script>
-
-  
 
   <!-- Fullscreen + orientation logic -->
   <script>

@@ -135,13 +135,14 @@ audioEngine.setSource("samples");
  <script src="sruler.js"></script>
 
 <script>
-
 window.addEventListener("load", () => {
-initStaff();
-  document.getElementById("splash").remove();
+
+  requestAnimationFrame(() => {
+    document.getElementById("splash").remove();
+  });
+
 });
 </script>
-
 
   <!-- Fullscreen + orientation logic -->
   <script>

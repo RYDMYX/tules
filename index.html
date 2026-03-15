@@ -96,11 +96,7 @@
 <body>
 <div id="splash">Loading...</div>
 
-<script>
 
-document.getElementById("splash").remove();
-});
-</script>
 
 
   <!-- Fullscreen controls -->
@@ -137,6 +133,13 @@ audioEngine.setSource("samples");
 <!-- <script src="buttons.js"></script> -->
  <script src="screen.js"></script>
  <script src="sruler.js"></script>
+
+<script>
+
+window.addEventListener("load", () => {
+  document.getElementById("splash").remove();
+});
+</script>
 
 
   <!-- Fullscreen + orientation logic -->
